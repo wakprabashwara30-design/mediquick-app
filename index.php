@@ -43,7 +43,7 @@ $catResult = mysqli_query($conn, $catQuery);
             Order genuine OTC medicines, wellness supplements, or simply upload your doctor's prescription for quick pharmacist review and express delivery across Kurunegala and suburbs.
           </p>
 
-          <div class="d-flex flex-wrap gap-3">
+          <div class="hero-btn-group mb-4">
             <a href="shop.php" class="btn btn-emerald btn-lg px-4 py-2.5">
               <i class="bi bi-capsule me-2"></i> Browse Medicines
             </a>
@@ -52,7 +52,7 @@ $catResult = mysqli_query($conn, $catQuery);
             </a>
           </div>
 
-          <!-- Trust Badges -->
+          <!-- Trust Stats -->
           <div class="row g-3 mt-4 pt-2 border-top border-secondary border-opacity-10">
             <div class="col-4">
               <div class="fw-bold fs-4 text-dark">100%</div>
@@ -99,6 +99,10 @@ $catResult = mysqli_query($conn, $catQuery);
     </div>
   </section>
 
+      </div>
+    </div>
+  </section>
+
   <!-- 2. HEALTHCARE CATEGORIES -->
   <section class="py-5 bg-white border-bottom">
     <div class="container">
@@ -125,8 +129,8 @@ $catResult = mysqli_query($conn, $catQuery);
     </div>
   </section>
 
-  <!-- 3. FEATURED MEDICINES & PRODUCTS -->
-  <section class="py-5">
+  <!-- 3. FEATURED PRODUCTS -->
+  <section class="py-5 bg-light border-bottom">
     <div class="container">
       <div class="d-flex justify-content-between align-items-end mb-4">
         <div>
@@ -138,48 +142,56 @@ $catResult = mysqli_query($conn, $catQuery);
         </a>
       </div>
 
-      <div class="row g-4">
+      <div class="row g-2 g-md-3 g-lg-4">
         <?php if ($featuredResult && mysqli_num_rows($featuredResult) > 0): ?>
           <?php while ($product = mysqli_fetch_assoc($featuredResult)): ?>
-            <div class="col-sm-6 col-md-4 col-lg-4">
-              <div class="card card-custom h-100 d-flex flex-column">
+            <div class="col-6 col-md-6 col-lg-3">
+              <div class="card card-custom h-100 d-flex flex-column border shadow-sm">
                 
                 <!-- Product Image -->
                 <div class="product-img-container position-relative">
-                  <img src="<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                  <img src="<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy">
                   
                   <!-- Prescription Requirement Badge -->
-                  <div class="position-absolute top-0 start-0 m-2">
+                  <div class="position-absolute top-0 start-0 m-1.5 m-md-2">
                     <?php if ($product['requires_prescription']): ?>
-                      <span class="badge-rx"><i class="bi bi-file-earmark-medical me-1"></i> Rx Required</span>
+                      <span class="badge-rx"><i class="bi bi-file-earmark-medical me-1"></i><span class="d-none d-sm-inline">Rx </span>Required</span>
                     <?php else: ?>
-                      <span class="badge-otc"><i class="bi bi-check-circle me-1"></i> OTC Medicine</span>
+                      <span class="badge-otc"><i class="bi bi-check-circle me-1"></i>OTC<span class="d-none d-sm-inline"> Medicine</span></span>
                     <?php endif; ?>
                   </div>
+
+                  <!-- Quick View Floating Button -->
+                  <a href="product-details.php?id=<?php echo $product['id']; ?>" class="product-quick-view-btn position-absolute top-0 end-0 m-1.5 m-md-2" title="Quick View">
+                    <i class="bi bi-eye"></i>
+                  </a>
                 </div>
 
                 <!-- Product Details -->
-                <div class="card-body p-3 d-flex flex-column">
-                  <span class="text-muted small mb-1"><?php echo htmlspecialchars($product['category_name']); ?></span>
-                  <h6 class="fw-bold text-dark mb-1">
-                    <a href="product-details.php?id=<?php echo $product['id']; ?>" class="text-dark">
+                <div class="card-body p-2.5 p-md-3 d-flex flex-column">
+                  <span class="text-muted small mb-1" style="font-size: 0.72rem;"><?php echo htmlspecialchars($product['category_name']); ?></span>
+                  <h6 class="fw-bold mb-1" style="font-size: 0.88rem; min-height: 2.3rem; line-height: 1.3;">
+                    <a href="product-details.php?id=<?php echo $product['id']; ?>" class="text-dark text-decoration-none">
                       <?php echo htmlspecialchars($product['name']); ?>
                     </a>
                   </h6>
-                  <small class="text-secondary mb-2"><?php echo htmlspecialchars($product['dosage'] ?? ''); ?></small>
+                  <small class="text-secondary mb-2 mb-md-3 text-truncate" style="font-size: 0.75rem;"><?php echo htmlspecialchars($product['dosage'] ?? ''); ?></small>
                   
-                  <div class="mt-auto pt-3 border-top d-flex align-items-center justify-content-between">
-                    <div class="price-tag">
-                      <?php echo formatLKR($product['price']); ?>
+                  <!-- Price & Full-Width Add Button -->
+                  <div class="mt-auto pt-2 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-1.5 mb-md-2">
+                      <div class="price-tag fw-bold" style="font-size: 0.95rem;">
+                        <?php echo formatLKR($product['price']); ?>
+                      </div>
+                      <?php if (!empty($product['stock']) && $product['stock'] > 0): ?>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle d-none d-sm-inline-block" style="font-size: 0.65rem;">In Stock</span>
+                      <?php endif; ?>
                     </div>
-                    <div class="d-flex gap-1">
-                      <a href="product-details.php?id=<?php echo $product['id']; ?>" class="btn btn-sm btn-outline-secondary" title="View Details">
-                        <i class="bi bi-eye"></i>
-                      </a>
-                      <a href="cart.php?action=add&id=<?php echo $product['id']; ?>" class="btn btn-sm btn-emerald" title="Add to Cart">
-                        <i class="bi bi-cart-plus me-1"></i> Add
-                      </a>
-                    </div>
+
+                    <a href="cart.php?action=add&id=<?php echo $product['id']; ?>" class="btn btn-emerald btn-sm w-100 py-1.5 py-md-2 d-flex align-items-center justify-content-center gap-1 fw-semibold shadow-sm" style="font-size: 0.8rem;" title="Add to Cart">
+                      <i class="bi bi-cart-plus"></i>
+                      <span>Add to Cart</span>
+                    </a>
                   </div>
                 </div>
 

@@ -9,44 +9,7 @@ $pageTitle = 'Health Blogs & Wellness Guides | MediQuick Pharmacy';
 include_once __DIR__ . '/includes/header.php';
 include_once __DIR__ . '/includes/navbar.php';
 
-$blogs = [
-    [
-        'id' => 1,
-        'title' => 'Understanding Antibiotics: Why Completing the Full Course Matters',
-        'category' => 'Prescription Care',
-        'date' => 'Sep 02, 2026',
-        'author' => 'Dr. Rohan Gunawardena (SLMC-PH)',
-        'image' => 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80',
-        'summary' => 'Stopping antibiotics early when symptoms improve leads to antibiotic resistance. Learn how bacteria develop immunity and how to safely take penicillin and amoxicillin.'
-    ],
-    [
-        'id' => 2,
-        'title' => 'Safe Storage of Insulin and Heat-Sensitive Medications in Tropical Climates',
-        'category' => 'Diabetes & Storage',
-        'date' => 'Aug 28, 2026',
-        'author' => 'MediQuick Clinical Team',
-        'image' => 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=600&auto=format&fit=crop&q=80',
-        'summary' => 'In Sri Lankan tropical temperatures, unmonitored heat degrades insulin efficacy. Discover optimal 2°C–8°C refrigeration practices and traveling storage tips.'
-    ],
-    [
-        'id' => 3,
-        'title' => 'Managing Hypertension: How to Accurately Measure Blood Pressure at Home',
-        'category' => 'Cardiovascular Health',
-        'date' => 'Aug 20, 2026',
-        'author' => 'Staff Pharmacist Kurunegala',
-        'image' => 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80',
-        'summary' => 'Accurate upper-arm blood pressure monitoring requires resting 5 minutes, correct cuff positioning at heart level, and avoiding caffeine prior to readings.'
-    ],
-    [
-        'id' => 4,
-        'title' => 'Immunity Boosters: The Science Behind Vitamin C and Zinc Supplements',
-        'category' => 'Wellness & Immunity',
-        'date' => 'Aug 14, 2026',
-        'author' => 'Nutritional Health Dept',
-        'image' => 'https://images.unsplash.com/photo-1577401239170-897942555fb3?w=600&auto=format&fit=crop&q=80',
-        'summary' => 'How daily antioxidants enhance cellular immunity against seasonal viral infections and flu in North Western province weather conditions.'
-    ]
-];
+$blogsQuery = mysqli_query($conn, "SELECT * FROM blogs ORDER BY id DESC");
 ?>
 
 <main class="py-5">
@@ -63,36 +26,55 @@ $blogs = [
 
     <!-- Blog Grid -->
     <div class="row g-4">
-      <?php foreach ($blogs as $post): ?>
-        <div class="col-md-6 col-lg-6">
-          <div class="card card-custom h-100 overflow-hidden bg-white d-flex flex-column">
-            
-            <div style="height: 220px; overflow: hidden; background-color: #f8fafc;">
-              <img src="<?php echo htmlspecialchars($post['image']); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
+      <?php if ($blogsQuery && mysqli_num_rows($blogsQuery) > 0): ?>
+        <?php while ($post = mysqli_fetch_assoc($blogsQuery)): 
+          $postImg = $post['image'];
+          $postDate = date('M d, Y', strtotime($post['created_at']));
+        ?>
+          <div class="col-md-6 col-lg-6">
+            <div class="card card-custom h-100 overflow-hidden bg-white d-flex flex-column border">
+              
+              <a href="blog-details.php?id=<?php echo $post['id']; ?>" class="d-block" style="height: 220px; overflow: hidden; background-color: #f8fafc;">
+                <img src="<?php echo htmlspecialchars($postImg); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+              </a>
 
-            <div class="card-body p-4 d-flex flex-column">
-              <div class="d-flex justify-content-between align-items-center mb-2 small text-muted">
-                <span class="badge bg-emerald-subtle text-emerald"><?php echo htmlspecialchars($post['category']); ?></span>
-                <span><i class="bi bi-calendar3 me-1"></i> <?php echo htmlspecialchars($post['date']); ?></span>
+              <div class="card-body p-4 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2.5 small text-muted">
+                  <span class="badge bg-emerald-subtle text-emerald border border-emerald"><?php echo htmlspecialchars($post['category']); ?></span>
+                  <span><i class="bi bi-calendar3 me-1"></i> <?php echo htmlspecialchars($postDate); ?></span>
+                </div>
+
+                <h4 class="fw-bold text-dark mb-2" style="font-size: 1.15rem; line-height: 1.35;">
+                  <a href="blog-details.php?id=<?php echo $post['id']; ?>" class="text-dark text-decoration-none">
+                    <?php echo htmlspecialchars($post['title']); ?>
+                  </a>
+                </h4>
+                <p class="text-secondary small leading-relaxed mb-4">
+                  <?php echo htmlspecialchars($post['summary']); ?>
+                </p>
+
+                <div class="mt-auto pt-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-2 small">
+                  <span class="text-muted"><i class="bi bi-person-fill text-emerald me-1"></i> <?php echo htmlspecialchars($post['author']); ?></span>
+                  <div class="d-flex align-items-center gap-3">
+                    <a href="blog-details.php?id=<?php echo $post['id']; ?>#related-medicines" class="text-secondary fw-semibold text-decoration-none" title="View Related Medicines">
+                      <i class="bi bi-capsule text-emerald me-1"></i> Medicines
+                    </a>
+                    <a href="blog-details.php?id=<?php echo $post['id']; ?>" class="btn btn-sm btn-soft-emerald rounded-pill px-3 py-1 fw-bold">
+                      Read Guide &rarr;
+                    </a>
+                  </div>
+                </div>
               </div>
 
-              <h4 class="fw-bold text-dark mb-2"><?php echo htmlspecialchars($post['title']); ?></h4>
-              <p class="text-secondary small leading-relaxed mb-4">
-                <?php echo htmlspecialchars($post['summary']); ?>
-              </p>
-
-              <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center small">
-                <span class="text-muted"><i class="bi bi-person me-1"></i> <?php echo htmlspecialchars($post['author']); ?></span>
-                <a href="shop.php" class="text-emerald fw-bold text-decoration-none">
-                  Related Medicines &rarr;
-                </a>
-              </div>
             </div>
-
           </div>
+        <?php endwhile; ?>
+      <?php else: ?>
+        <div class="col-12 text-center py-5 text-muted">
+          <i class="bi bi-journal-x fs-1 d-block mb-2 text-secondary"></i>
+          No health guides published yet. Check back soon!
         </div>
-      <?php endforeach; ?>
+      <?php endif; ?>
     </div>
 
   </div>

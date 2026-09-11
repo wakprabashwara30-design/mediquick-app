@@ -52,8 +52,13 @@ include_once __DIR__ . '/../includes/header.php';
     
     <!-- Admin Top Bar -->
     <div class="admin-topbar d-flex justify-content-between align-items-center">
-      <div class="small text-secondary fw-semibold">
-        <i class="bi bi-bag-check-fill text-emerald me-1"></i> Orders & Shipping Fulfillment &mdash; Kurunegala
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-light d-lg-none border px-2 py-1 shadow-none" type="button" onclick="toggleAdminSidebar()" aria-label="Toggle Menu">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <div class="small text-secondary fw-semibold text-truncate">
+          <i class="bi bi-bag-check-fill text-emerald me-1"></i> <span class="d-none d-sm-inline">Fulfillment &mdash; </span>Orders
+        </div>
       </div>
       <div class="d-flex align-items-center gap-2">
         <a href="../index.php" target="_blank" class="btn btn-sm btn-outline-secondary" style="font-size: 0.8rem;">
@@ -115,7 +120,21 @@ include_once __DIR__ . '/../includes/header.php';
                   <td><?php echo htmlspecialchars($ord['phone']); ?></td>
                   <td><?php echo htmlspecialchars($ord['delivery_address']); ?>, <?php echo htmlspecialchars($ord['city']); ?></td>
                   <td class="fw-bold text-emerald"><?php echo formatLKR($ord['total_amount']); ?></td>
-                  <td><?php echo htmlspecialchars($ord['payment_method']); ?></td>
+                  <td>
+                    <div><?php echo htmlspecialchars($ord['payment_method']); ?></div>
+                    <?php if (($ord['payment_status'] ?? '') === 'Paid'): ?>
+                      <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;">
+                        <i class="bi bi-check-circle-fill me-1"></i> Paid
+                      </span>
+                    <?php else: ?>
+                      <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.68rem;">
+                        <i class="bi bi-clock me-1"></i> Pending Payment
+                      </span>
+                    <?php endif; ?>
+                    <?php if (!empty($ord['payhere_payment_id'])): ?>
+                      <div class="text-muted font-monospace" style="font-size: 0.68rem;"><?php echo htmlspecialchars($ord['payhere_payment_id']); ?></div>
+                    <?php endif; ?>
+                  </td>
                   <td>
                     <!-- Status Form Inline -->
                     <form action="orders.php" method="POST" class="d-flex align-items-center gap-1">

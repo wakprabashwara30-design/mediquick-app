@@ -28,6 +28,6 @@ if (!isset($pageTitle)) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   
   <!-- Custom Project Stylesheet -->
-  <link rel="stylesheet" href="<?php echo $basePath; ?>assets/css/style.css">
+  <link rel="stylesheet" href="<?php echo $basePath; ?>assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/../assets/css/style.css'); ?>">
 </head>
 <body>

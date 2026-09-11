@@ -13,8 +13,8 @@ if (!isLoggedIn()) {
 
 $userId = (int)$_SESSION['user_id'];
 
-// Fetch user orders
-$ordersQuery = mysqli_query($conn, "SELECT * FROM orders WHERE user_id = $userId ORDER BY id DESC");
+// Fetch valid user orders (COD orders or paid online orders)
+$ordersQuery = mysqli_query($conn, "SELECT * FROM orders WHERE user_id = $userId AND (payment_method = 'Cash on Delivery' OR payment_status = 'Paid') ORDER BY id DESC");
 
 // Fetch user prescriptions
 $rxQuery = mysqli_query($conn, "SELECT * FROM prescriptions WHERE user_id = $userId ORDER BY id DESC");
@@ -78,7 +78,18 @@ include_once __DIR__ . '/includes/navbar.php';
                       <td class="text-secondary"><?php echo date('M d, Y', strtotime($ord['created_at'])); ?></td>
                       <td><?php echo htmlspecialchars($ord['city']); ?></td>
                       <td class="fw-bold text-emerald"><?php echo formatLKR($ord['total_amount']); ?></td>
-                      <td><?php echo htmlspecialchars($ord['payment_method']); ?></td>
+                      <td>
+                        <div class="fw-semibold text-dark"><?php echo htmlspecialchars($ord['payment_method']); ?></div>
+                        <?php if (($ord['payment_status'] ?? '') === 'Paid'): ?>
+                          <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;">
+                            <i class="bi bi-check-circle-fill me-1"></i> Paid Online
+                          </span>
+                        <?php else: ?>
+                          <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.68rem;">
+                            <i class="bi bi-hourglass-split me-1"></i> To be collected
+                          </span>
+                        <?php endif; ?>
+                      </td>
                       <td>
                         <?php 
                           $st = $ord['status'];

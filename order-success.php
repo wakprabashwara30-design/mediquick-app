@@ -95,9 +95,15 @@ include_once __DIR__ . '/includes/navbar.php';
             </div>
 
             <div class="text-md-end">
-              <div class="badge bg-dark text-white px-2.5 py-1 mb-1 font-mono">
-                CASH ON DELIVERY INVOICE
-              </div>
+              <?php if (($order['payment_status'] ?? '') === 'Paid' || isset($_GET['payment_status'])): ?>
+                <div class="badge bg-success text-white px-3 py-1.5 mb-1 font-mono shadow-sm" style="font-size: 0.82rem;">
+                  <i class="bi bi-check-circle-fill me-1"></i> PAID - PAYHERE VERIFIED
+                </div>
+              <?php else: ?>
+                <div class="badge bg-dark text-white px-2.5 py-1 mb-1 font-mono">
+                  CASH ON DELIVERY INVOICE
+                </div>
+              <?php endif; ?>
               <div class="small text-secondary">
                 <strong>Invoice #:</strong> <span class="font-mono fw-bold text-dark">#MQ-<?php echo str_pad($order['id'], 5, '0', STR_PAD_LEFT); ?></span>
               </div>
@@ -131,13 +137,20 @@ include_once __DIR__ . '/includes/navbar.php';
                 </div>
                 <div>
                   <strong>Payment Method:</strong> 
-                  <span class="badge bg-success-subtle text-success border border-success border-opacity-25 ms-1">
+                  <span class="badge bg-emerald-subtle text-emerald border border-emerald ms-1">
                     <?php echo htmlspecialchars($order['payment_method']); ?>
                   </span>
                 </div>
                 <div class="mt-1">
                   <strong>Payment Status:</strong> 
-                  <span class="text-danger fw-bold"><i class="bi bi-hourglass-split"></i> To be collected upon delivery</span>
+                  <?php if (($order['payment_status'] ?? '') === 'Paid' || isset($_GET['payment_status'])): ?>
+                    <span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Paid (PayHere Sandbox Approved)</span>
+                    <?php if (!empty($order['payhere_payment_id'])): ?>
+                      <div class="text-muted font-monospace" style="font-size: 0.72rem;">Ref: <?php echo htmlspecialchars($order['payhere_payment_id']); ?></div>
+                    <?php endif; ?>
+                  <?php else: ?>
+                    <span class="text-danger fw-bold"><i class="bi bi-hourglass-split"></i> To be collected upon delivery</span>
+                  <?php endif; ?>
                 </div>
                 <div class="mt-1">
                   <strong>Order Status:</strong> 

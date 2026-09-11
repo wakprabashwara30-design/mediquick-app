@@ -100,7 +100,7 @@ $grandTotal = $subtotal + $deliveryFee;
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="fw-bold mb-0">Shopping Cart (<?php echo getCartCount(); ?> items)</h2>
       <?php if (count($cartItems) > 0): ?>
-        <a href="cart.php?action=clear" class="btn btn-outline-danger btn-sm" onclick="return confirmAction('Are you sure you want to clear your cart?');">
+        <a href="cart.php?action=clear" class="btn btn-outline-danger btn-sm" onclick="return confirmAction('Are you sure you want to clear all items from your shopping cart?', 'Clear Shopping Cart?', 'danger', 'Yes, Clear Cart');">
           <i class="bi bi-trash me-1"></i> Clear Cart
         </a>
       <?php endif; ?>
@@ -145,20 +145,22 @@ $grandTotal = $subtotal + $deliveryFee;
                         <?php echo formatLKR($item['price']); ?>
                       </td>
                       <td>
-                        <form action="cart.php" method="GET" class="d-flex align-items-center gap-1">
-                          <input type="hidden" name="action" value="update">
-                          <input type="hidden" name="id" value="<?php echo $item['id']; ?>">
-                          <input type="number" name="qty" value="<?php echo $item['quantity']; ?>" min="1" max="99" class="form-control form-control-sm text-center" style="width: 60px;">
-                          <button type="submit" class="btn btn-sm btn-outline-secondary" title="Update Quantity">
-                            <i class="bi bi-arrow-repeat"></i>
-                          </button>
-                        </form>
+                        <div class="input-group input-group-sm" style="width: 105px;">
+                          <a href="cart.php?action=update&id=<?php echo $item['id']; ?>&qty=<?php echo max(1, $item['quantity'] - 1); ?>" class="btn btn-outline-secondary px-2" title="Decrease Quantity">
+                            <i class="bi bi-dash"></i>
+                          </a>
+                          <input type="text" class="form-control text-center px-1 fw-bold bg-light" value="<?php echo $item['quantity']; ?>" readonly>
+                          <a href="cart.php?action=update&id=<?php echo $item['id']; ?>&qty=<?php echo $item['quantity'] + 1; ?>" class="btn btn-outline-secondary px-2" title="Increase Quantity">
+                            <i class="bi bi-plus"></i>
+                          </a>
+                        </div>
                       </td>
                       <td class="fw-bold text-emerald">
                         <?php echo formatLKR($item['total']); ?>
                       </td>
                       <td class="text-end">
-                        <a href="cart.php?action=remove&id=<?php echo $item['id']; ?>" class="btn btn-sm btn-outline-danger" title="Remove item" onclick="return confirmAction('Remove this item from your cart?');">
+                        <a href="cart.php?action=remove&id=<?php echo $item['id']; ?>" class="btn btn-sm btn-outline-danger" title="Remove item" 
+                           onclick="return confirmAction('Remove <?php echo htmlspecialchars(addslashes($item['name'])); ?> from your cart?', 'Remove Medicine?', 'danger', 'Yes, Remove');">
                           <i class="bi bi-x-lg"></i>
                         </a>
                       </td>

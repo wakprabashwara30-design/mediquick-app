@@ -53,8 +53,13 @@ include_once __DIR__ . '/../includes/header.php';
     
     <!-- Admin Top Bar -->
     <div class="admin-topbar d-flex justify-content-between align-items-center">
-      <div class="small text-secondary fw-semibold">
-        <i class="bi bi-chat-left-dots-fill text-emerald me-1"></i> Customer Consultations & Inquiries &mdash; Kurunegala
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-light d-lg-none border px-2 py-1 shadow-none" type="button" onclick="toggleAdminSidebar()" aria-label="Toggle Menu">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <div class="small text-secondary fw-semibold text-truncate">
+          <i class="bi bi-chat-left-dots-fill text-emerald me-1"></i> <span class="d-none d-sm-inline">Inquiries &mdash; </span>Messages
+        </div>
       </div>
       <div class="d-flex align-items-center gap-2">
         <a href="../index.php" target="_blank" class="btn btn-sm btn-outline-secondary" style="font-size: 0.8rem;">
@@ -129,7 +134,8 @@ include_once __DIR__ . '/../includes/header.php';
                     <a href="mailto:<?php echo htmlspecialchars($inq['email']); ?>?subject=Re: <?php echo urlencode($inq['subject']); ?>" class="btn btn-sm btn-outline-primary me-1" title="Reply via Email">
                       <i class="bi bi-reply"></i>
                     </a>
-                    <a href="inquiries.php?action=delete&id=<?php echo $inq['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirmAction('Delete this inquiry message?');" title="Delete">
+                    <a href="inquiries.php?action=delete&id=<?php echo $inq['id']; ?>" class="btn btn-sm btn-outline-danger" 
+                       onclick="return confirmAction('Are you sure you want to permanently delete inquiry #INQ-<?php echo $inq['id']; ?> from <?php echo htmlspecialchars(addslashes($inq['name'])); ?>?', 'Delete Customer Inquiry?');" title="Delete Inquiry">
                       <i class="bi bi-trash"></i>
                     </a>
                   </td>

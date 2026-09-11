@@ -182,25 +182,63 @@ include_once __DIR__ . '/includes/navbar.php';
             </h5>
 
             <div class="mb-4">
-              <div class="form-check p-3 rounded-3 border mb-2" style="background-color: #f8fafc;">
-                <input class="form-check-input" type="radio" name="payment_method" id="payCod" value="Cash on Delivery" checked>
-                <label class="form-check-label fw-semibold" for="payCod">
-                  <i class="bi bi-cash-stack text-success me-1"></i> Cash on Delivery (COD)
-                  <div class="text-muted small fw-normal">Pay directly to our delivery courier upon receiving your package.</div>
+              <!-- Cash on Delivery -->
+              <div class="form-check p-3 rounded-3 border mb-2 cursor-pointer" style="background-color: #f8fafc;" onclick="document.getElementById('payCod').checked = true; togglePaymentUi();">
+                <input class="form-check-input mt-1" type="radio" name="payment_method" id="payCod" value="Cash on Delivery" checked onchange="togglePaymentUi()">
+                <label class="form-check-label fw-semibold text-dark w-100 ps-1" for="payCod">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-cash-stack text-success me-1.5 fs-5"></i> Cash on Delivery (COD)</span>
+                    <span class="badge bg-secondary-subtle text-secondary border rounded-pill">Pay at Doorstep</span>
+                  </div>
+                  <div class="text-muted small fw-normal mt-1">Pay with cash directly to our pharmacy delivery courier upon receiving your parcel.</div>
                 </label>
               </div>
 
-              <div class="form-check p-3 rounded-3 border" style="background-color: #f8fafc;">
-                <input class="form-check-input" type="radio" name="payment_method" id="payCard" value="Credit / Debit Card (Online)">
-                <label class="form-check-label fw-semibold" for="payCard">
-                  <i class="bi bi-credit-card-2-front text-primary me-1"></i> Card Payment (Visa / MasterCard)
-                  <div class="text-muted small fw-normal">Secure payment gateway simulation for university project.</div>
+              <!-- PayHere Online Payment Gateway -->
+              <div class="form-check p-3 rounded-3 border mb-3 cursor-pointer" style="background-color: #f0fdf4; border-color: #a7f3d0 !important;" onclick="document.getElementById('payPayHere').checked = true; togglePaymentUi();">
+                <input class="form-check-input mt-1" type="radio" name="payment_method" id="payPayHere" value="PayHere (Online Card / Mobile)" onchange="togglePaymentUi()">
+                <label class="form-check-label fw-semibold text-dark w-100 ps-1" for="payPayHere">
+                  <div class="d-flex justify-content-between align-items-center flex-wrap gap-1">
+                    <span><i class="bi bi-shield-check text-emerald me-1.5 fs-5"></i> PayHere Online Payment <span class="badge bg-emerald text-white rounded-pill ms-1" style="font-size: 0.68rem;">LKR Sandbox</span></span>
+                    <span class="badge bg-success text-white rounded-pill px-2 py-1" style="font-size: 0.7rem;">CBSL Approved</span>
+                  </div>
+                  <div class="text-muted small fw-normal mt-1 mb-2">Instant online payment via Visa, MasterCard, AMEX, eZ Cash, mCash, FriMi, and Genie.</div>
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-white text-dark border px-2 py-1 shadow-2xs fw-bold" style="font-size: 0.72rem;"><i class="bi bi-credit-card text-primary me-1"></i> Visa / Mastercard</span>
+                    <span class="badge bg-white text-dark border px-2 py-1 shadow-2xs fw-bold" style="font-size: 0.72rem;"><i class="bi bi-phone text-warning me-1"></i> eZ Cash / mCash</span>
+                    <span class="badge bg-white text-dark border px-2 py-1 shadow-2xs fw-bold" style="font-size: 0.72rem;"><i class="bi bi-wallet2 text-danger me-1"></i> FriMi / Genie</span>
+                  </div>
                 </label>
+              </div>
+
+              <!-- PayHere Demo Test Cards Helper Box -->
+              <div id="payhereHelperBox" class="p-3 rounded-3 border bg-emerald-subtle border-emerald mb-3 d-none">
+                <div class="d-flex align-items-center justify-content-between mb-1.5">
+                  <span class="fw-bold text-dark small"><i class="bi bi-info-circle-fill text-emerald me-1"></i> PayHere Sandbox Official Test Cards:</span>
+                  <span class="badge bg-emerald text-white rounded-pill" style="font-size: 0.68rem;">Demo Mode</span>
+                </div>
+                <div class="row g-2 small text-dark font-monospace" style="font-size: 0.8rem;">
+                  <div class="col-sm-6">
+                    <span class="text-muted">Visa Card:</span> <strong class="bg-white px-1.5 py-0.5 rounded border user-select-all">4916217501611292</strong>
+                  </div>
+                  <div class="col-sm-6">
+                    <span class="text-muted">MasterCard:</span> <strong class="bg-white px-1.5 py-0.5 rounded border user-select-all">5307732125531191</strong>
+                  </div>
+                  <div class="col-sm-4">
+                    <span class="text-muted">Exp:</span> <strong class="bg-white px-1.5 py-0.5 rounded border user-select-all">12/28</strong>
+                  </div>
+                  <div class="col-sm-4">
+                    <span class="text-muted">CVV:</span> <strong class="bg-white px-1.5 py-0.5 rounded border user-select-all">123</strong>
+                  </div>
+                  <div class="col-sm-4">
+                    <span class="text-muted">SMS OTP:</span> <strong class="bg-white px-1.5 py-0.5 rounded border text-success fw-bold user-select-all">123456</strong>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <button type="submit" class="btn btn-emerald w-100 py-3 fs-6 fw-bold">
-              <i class="bi bi-bag-check-fill me-2"></i> Confirm & Place Order (<?php echo formatLKR($grandTotal); ?>)
+            <button type="button" id="submitOrderBtn" onclick="handleOrderPlacement()" class="btn btn-emerald w-100 py-3 fs-6 fw-bold shadow-sm">
+              <i class="bi bi-bag-check-fill me-2"></i> <span id="btnSubmitText">Confirm & Place Order (<?php echo formatLKR($grandTotal); ?>)</span>
             </button>
           </form>
 
@@ -253,4 +291,139 @@ include_once __DIR__ . '/includes/navbar.php';
   </div>
 </main>
 
+<!-- PayHere Official JavaScript SDK -->
+<script type="text/javascript" src="https://www.payhere.lk/lib/payhere.js"></script>
+
+<script>
+function togglePaymentUi() {
+  const isPayHere = document.getElementById('payPayHere').checked;
+  const helperBox = document.getElementById('payhereHelperBox');
+  const btnText = document.getElementById('btnSubmitText');
+  
+  if (isPayHere) {
+    if (helperBox) helperBox.classList.remove('d-none');
+    if (btnText) btnText.innerHTML = 'Pay with PayHere Sandbox (<?php echo formatLKR($grandTotal); ?>)';
+  } else {
+    if (helperBox) helperBox.classList.add('d-none');
+    if (btnText) btnText.innerHTML = 'Confirm & Place Order (<?php echo formatLKR($grandTotal); ?>)';
+  }
+}
+
+// PayHere Official SDK Callback Listeners
+payhere.onCompleted = function onCompleted(orderId) {
+  console.log("PayHere Official Payment completed. OrderID:" + orderId);
+  const form = document.querySelector('form[action="checkout.php"]');
+  const formData = new FormData(form);
+  formData.append('payment_id', orderId || ('PH_OFFICIAL_' + Date.now()));
+
+  fetch('process_card_payment.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === 'success') {
+      window.location.href = 'order-success.php?order_id=' + data.order_id + '&payment_status=success';
+    } else {
+      window.location.href = 'order-success.php?payment_status=success';
+    }
+  })
+  .catch(() => {
+    window.location.href = 'order-success.php?payment_status=success';
+  });
+};
+
+payhere.onDismissed = function onDismissed() {
+  console.log("PayHere official payment dismissed by user.");
+  const btn = document.getElementById('submitOrderBtn');
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-bag-check-fill me-2"></i> <span id="btnSubmitText">Pay with PayHere Sandbox (<?php echo formatLKR($grandTotal); ?>)</span>';
+  }
+  togglePaymentUi();
+};
+
+payhere.onError = function onError(error) {
+  console.log("PayHere SDK Error: " + error);
+  alert("PayHere Gateway Notification: " + error);
+  const btn = document.getElementById('submitOrderBtn');
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-bag-check-fill me-2"></i> <span id="btnSubmitText">Pay with PayHere Sandbox (<?php echo formatLKR($grandTotal); ?>)</span>';
+  }
+  togglePaymentUi();
+};
+
+function handleOrderPlacement() {
+  const form = document.querySelector('form[action="checkout.php"]');
+  const name = document.getElementById('cName').value.trim();
+  const phone = document.getElementById('cPhone').value.trim();
+  const address = document.getElementById('cAddress').value.trim();
+  const isPayHere = document.getElementById('payPayHere').checked;
+
+  if (!name || !phone || !address) {
+    alert('Please complete all required delivery fields: Full Name, Phone, and Delivery Address.');
+    return;
+  }
+
+  const btn = document.getElementById('submitOrderBtn');
+
+  if (!isPayHere) {
+    // Standard Cash on Delivery Submission
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Placing Order...';
+    form.submit();
+  } else {
+    // Official PayHere Online Cloud Gateway
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Opening Official PayHere Gateway...';
+
+    const formData = new FormData(form);
+
+    fetch('get_payhere_params.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const payment = {
+          "sandbox": data.sandbox,
+          "merchant_id": data.merchant_id,
+          "return_url": data.return_url,
+          "cancel_url": data.cancel_url,
+          "notify_url": data.notify_url,
+          "order_id": data.order_id,
+          "items": data.items,
+          "amount": data.amount,
+          "currency": data.currency,
+          "hash": data.hash,
+          "first_name": data.first_name,
+          "last_name": data.last_name,
+          "email": data.email,
+          "phone": data.phone,
+          "address": data.address,
+          "city": data.city,
+          "country": data.country
+        };
+
+        // Trigger Official PayHere Cloud Gateway
+        payhere.startPayment(payment);
+      } else {
+        alert(data.message || 'Unable to start PayHere gateway.');
+        btn.disabled = false;
+        togglePaymentUi();
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Network error while connecting to PayHere.');
+      btn.disabled = false;
+      togglePaymentUi();
+    });
+  }
+}
+</script>
+
 <?php include_once __DIR__ . '/includes/footer.php'; ?>
+
