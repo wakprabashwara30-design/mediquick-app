@@ -614,101 +614,58 @@ a {
 /* ==========================================================================
    Modern Offcanvas Mobile Navigation Drawer (Mobile & Tablet < 992px)
    ========================================================================== */
-@media (max-width: 991.98px) {
-  .offcanvas-lg.offcanvas-end,
-  .offcanvas.offcanvas-end {
-    position: fixed !important;
-    top: 0 !important;
-    bottom: 0 !important;
-    right: 0 !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    width: 300px !important;
-    max-width: 82vw !important;
-    z-index: 1060 !important;
-    background-color: #ffffff !important;
-    box-shadow: -10px 0 35px rgba(15, 23, 42, 0.18) !important;
-    border-left: 1px solid var(--mq-border) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  }
-
-  .offcanvas-backdrop.show {
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    background-color: rgba(15, 23, 42, 0.55);
-    z-index: 1055 !important;
-  }
-
-  .offcanvas-header {
-    border-bottom: 1px solid var(--mq-border);
-    background: #ffffff;
-    padding: 0.85rem 1.15rem;
-    flex-shrink: 0;
-  }
-
-  .offcanvas-body {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    flex-grow: 1;
-    padding: 1rem !important;
-  }
-
-  .offcanvas-body .nav-link {
-    font-size: 0.92rem;
-    font-weight: 500;
-    padding: 0.6rem 0.8rem !important;
-    border-radius: 12px;
-    margin-bottom: 3px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--mq-slate) !important;
-    transition: all 0.2s ease;
-  }
-
-  .offcanvas-body .nav-link:hover {
-    background-color: var(--mq-primary-light);
-    color: var(--mq-primary) !important;
-    transform: translateX(3px);
-  }
-
-  .offcanvas-body .nav-link.active {
-    background-color: var(--mq-primary-light);
-    color: var(--mq-primary) !important;
-    font-weight: 600;
-    border-left: 3.5px solid var(--mq-primary);
-  }
+#mobileNavDrawer.offcanvas,
+.offcanvas.offcanvas-end {
+  --bs-offcanvas-width: 320px;
+  max-width: 85vw;
+  background-color: #ffffff;
+  box-shadow: -10px 0 35px rgba(15, 23, 42, 0.18);
+  border-left: 1px solid var(--mq-border);
 }
 
-/* Desktop Navbar Standards (>= 992px) */
-@media (min-width: 992px) {
-  .offcanvas-lg.offcanvas-end {
-    position: static !important;
-    width: auto !important;
-    max-width: none !important;
-    height: auto !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    transform: none !important;
-    visibility: visible !important;
-    flex-grow: 1 !important;
-  }
-  
-  .offcanvas-lg.offcanvas-end .offcanvas-body {
-    overflow: visible !important;
-    padding: 0 !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-  }
+.offcanvas-backdrop.show {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background-color: rgba(15, 23, 42, 0.55);
+}
 
-  .offcanvas-header {
-    display: none !important;
-  }
+.offcanvas-header {
+  border-bottom: 1px solid var(--mq-border);
+  background: #ffffff;
+  padding: 0.85rem 1.15rem;
+  flex-shrink: 0;
+}
+
+.offcanvas-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem !important;
+}
+
+.offcanvas-body .nav-link {
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding: 0.65rem 0.85rem !important;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--mq-slate) !important;
+  transition: all 0.2s ease;
+}
+
+.offcanvas-body .nav-link:hover {
+  background-color: var(--mq-primary-light);
+  color: var(--mq-primary) !important;
+  transform: translateX(3px);
+}
+
+.offcanvas-body .nav-link.active {
+  background-color: var(--mq-primary-light);
+  color: var(--mq-primary) !important;
+  font-weight: 600;
+  border-left: 3.5px solid var(--mq-primary);
 }
 
 /* Floating Product Quick View Button on Card Image */
