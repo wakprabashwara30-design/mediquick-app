@@ -50,16 +50,4 @@ A dynamic, database-driven community pharmacy web application developed for **Me
    ```
    Open `http://localhost:8000` in your web browser.
 
----
 
-## 👥 Default Credentials
-
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Admin / Pharmacist** | `admin@mediquick.lk` | `password123` |
-| **Customer** | `kasun@gmail.com` | `password123` |
-
----
-
-## 📄 Documentation
-Comprehensive academic project report and architectural diagrams are available inside the [`documentation/`](./documentation/) directory.
