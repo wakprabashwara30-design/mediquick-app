@@ -21,6 +21,10 @@ if (!$orderQuery || mysqli_num_rows($orderQuery) === 0) {
 
 $order = mysqli_fetch_assoc($orderQuery);
 
+// Fetch linked prescription if this order was generated from a prescription
+$rxQuery = mysqli_query($conn, "SELECT * FROM prescriptions WHERE order_id = $orderId LIMIT 1");
+$linkedRx = ($rxQuery && mysqli_num_rows($rxQuery) > 0) ? mysqli_fetch_assoc($rxQuery) : null;
+
 // Fetch order items
 $itemsQuery = mysqli_query($conn, "SELECT * FROM order_items WHERE order_id = $orderId");
 $itemsList = [];
@@ -209,20 +213,43 @@ include_once __DIR__ . '/includes/navbar.php';
               </div>
               <hr class="my-2">
               <div class="d-flex justify-content-between align-items-center fs-5 fw-bold text-dark border-top pt-2">
-                <span>Cash Payable:</span>
+                <span><?php echo (($order['payment_status'] ?? '') === 'Paid') ? 'Total Paid Amount:' : 'Cash Payable on Delivery:'; ?></span>
                 <span class="text-emerald font-mono"><?php echo formatLKR($order['total_amount']); ?></span>
               </div>
             </div>
           </div>
 
-          <!-- Cash on Delivery Collection Notice Box -->
-          <div class="alert alert-warning d-flex align-items-center gap-3 p-3 rounded-3 mb-4 small" role="alert">
-            <i class="bi bi-cash-coin fs-3 text-warning"></i>
-            <div>
-              <strong>Cash on Delivery (COD) Instructions:</strong><br>
-              Please hand over the exact cash amount of <strong><?php echo formatLKR($order['total_amount']); ?></strong> to our delivery rider when receiving the package in Kurunegala.
+          <?php if ($linkedRx && !empty($linkedRx['pharmacist_notes'])): ?>
+            <!-- Pharmacist Clinical Dosage & Instructions Box -->
+            <div class="p-3 rounded-3 bg-light border border-emerald-subtle mb-4 small">
+              <div class="fw-bold text-dark mb-1 d-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+                <i class="bi bi-file-earmark-medical text-emerald fs-6"></i> SLMC Pharmacist Clinical Instructions (#RX-<?php echo str_pad($linkedRx['id'], 4, '0', STR_PAD_LEFT); ?>):
+              </div>
+              <div class="text-secondary ps-4">
+                <?php echo nl2br(htmlspecialchars($linkedRx['pharmacist_notes'])); ?>
+              </div>
             </div>
-          </div>
+          <?php endif; ?>
+
+          <?php if (($order['payment_status'] ?? '') === 'Paid' || isset($_GET['payment_status'])): ?>
+            <!-- PayHere Verified Notice -->
+            <div class="alert alert-success d-flex align-items-center gap-3 p-3 rounded-3 mb-4 small" role="alert">
+              <i class="bi bi-shield-fill-check fs-3 text-success"></i>
+              <div>
+                <strong>Online Payment Verified:</strong><br>
+                Your payment of <strong><?php echo formatLKR($order['total_amount']); ?></strong> was successfully processed through PayHere CBSL approved gateway. Your medications are being packed for express courier dispatch.
+              </div>
+            </div>
+          <?php else: ?>
+            <!-- Cash on Delivery Collection Notice Box -->
+            <div class="alert alert-warning d-flex align-items-center gap-3 p-3 rounded-3 mb-4 small" role="alert">
+              <i class="bi bi-cash-coin fs-3 text-warning"></i>
+              <div>
+                <strong>Cash on Delivery (COD) Instructions:</strong><br>
+                Please hand over the exact cash amount of <strong><?php echo formatLKR($order['total_amount']); ?></strong> to our delivery rider when receiving the package in Kurunegala.
+              </div>
+            </div>
+          <?php endif; ?>
         </div>
 
       </div>

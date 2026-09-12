@@ -33,17 +33,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_rx'])) {
     $rxId = (int)$_POST['rx_id'];
     $status = trim($_POST['status'] ?? 'Pending');
     $notes = trim($_POST['pharmacist_notes'] ?? '');
+    $quotedAmount = !empty($_POST['quoted_amount']) ? (float)$_POST['quoted_amount'] : 0.00;
 
     $allowedStatuses = ['Pending', 'Approved', 'Rejected'];
     if (in_array($status, $allowedStatuses) && $rxId > 0) {
         $safeStatus = mysqli_real_escape_string($conn, $status);
         $safeNotes = mysqli_real_escape_string($conn, $notes);
 
-        $sql = "UPDATE prescriptions SET status = '$safeStatus', pharmacist_notes = '$safeNotes' WHERE id = $rxId";
-        if (mysqli_query($conn, $sql)) {
-            $successMsg = "Prescription #RX-" . str_pad($rxId, 4, '0', STR_PAD_LEFT) . " marked as $status.";
-        } else {
-            $errorMsg = "Failed to update prescription: " . mysqli_error($conn);
+        // Fetch current prescription record
+        $currRxRes = mysqli_query($conn, "SELECT p.*, u.email AS user_email FROM prescriptions p LEFT JOIN users u ON p.user_id = u.id WHERE p.id = $rxId LIMIT 1");
+        $currRx = ($currRxRes) ? mysqli_fetch_assoc($currRxRes) : null;
+
+        if ($currRx) {
+            $existingOrderId = !empty($currRx['order_id']) ? (int)$currRx['order_id'] : 0;
+            $userIdVal = !empty($currRx['user_id']) ? (int)$currRx['user_id'] : "NULL";
+            $patientName = mysqli_real_escape_string($conn, $currRx['patient_name']);
+            $phone = mysqli_real_escape_string($conn, $currRx['phone']);
+            $email = mysqli_real_escape_string($conn, $currRx['user_email'] ?? 'customer@mediquick.lk');
+            $address = mysqli_real_escape_string($conn, $currRx['delivery_address']);
+            $rxRef = '#RX-' . str_pad($rxId, 4, '0', STR_PAD_LEFT);
+
+            if ($status === 'Approved' && $quotedAmount > 0) {
+                if ($existingOrderId > 0) {
+                    // Update existing linked order
+                    mysqli_query($conn, "UPDATE orders SET total_amount = $quotedAmount WHERE id = $existingOrderId");
+                    mysqli_query($conn, "UPDATE order_items SET unit_price = $quotedAmount, total_price = $quotedAmount WHERE order_id = $existingOrderId");
+                    $orderId = $existingOrderId;
+                } else {
+                    // Create new linked order in Pending payment state
+                    $insertOrderSql = "INSERT INTO orders (user_id, customer_name, phone, email, delivery_address, city, total_amount, payment_method, payment_status, status) 
+                                       VALUES ($userIdVal, '$patientName', '$phone', '$email', '$address', 'Kurunegala', $quotedAmount, 'Prescription Quotation', 'Pending', 'Pending')";
+                    mysqli_query($conn, $insertOrderSql);
+                    $orderId = mysqli_insert_id($conn);
+
+                    if ($orderId > 0) {
+                        $itemName = mysqli_real_escape_string($conn, "Prescription Medication Course ($rxRef)");
+                        mysqli_query($conn, "INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity, total_price) 
+                                             VALUES ($orderId, NULL, '$itemName', $quotedAmount, 1, $quotedAmount)");
+                    }
+                }
+
+                $sql = "UPDATE prescriptions SET status = '$safeStatus', pharmacist_notes = '$safeNotes', quoted_amount = $quotedAmount, order_id = " . ($orderId > 0 ? $orderId : "NULL") . " WHERE id = $rxId";
+            } else {
+                $sql = "UPDATE prescriptions SET status = '$safeStatus', pharmacist_notes = '$safeNotes', quoted_amount = " . ($quotedAmount > 0 ? $quotedAmount : "NULL") . " WHERE id = $rxId";
+            }
+
+            if (mysqli_query($conn, $sql)) {
+                $successMsg = "Prescription $rxRef marked as $status" . ($quotedAmount > 0 ? " with quotation of " . formatLKR($quotedAmount) . "." : ".");
+            } else {
+                $errorMsg = "Failed to update prescription: " . mysqli_error($conn);
+            }
         }
     }
 }
@@ -304,6 +343,19 @@ include_once __DIR__ . '/../includes/header.php';
                             </span>
                           <?php endif; ?>
 
+                        <?php if (!empty($rx['quoted_amount']) && (float)$rx['quoted_amount'] > 0): ?>
+                          <div class="mt-1 d-flex flex-wrap align-items-center gap-1">
+                            <span class="badge bg-emerald text-white font-mono px-2 py-1 shadow-xs" style="font-size: 0.75rem;">
+                              <i class="bi bi-tag-fill me-1"></i> <?php echo formatLKR($rx['quoted_amount']); ?>
+                            </span>
+                            <?php if (!empty($rx['order_id'])): ?>
+                              <a href="orders.php" class="badge bg-dark-subtle text-dark border text-decoration-none px-2 py-1" style="font-size: 0.72rem;" title="View Linked Order in Orders Queue">
+                                <i class="bi bi-bag-check me-0.5"></i> #MQ-<?php echo str_pad($rx['order_id'], 5, '0', STR_PAD_LEFT); ?>
+                              </a>
+                            <?php endif; ?>
+                          </div>
+                        <?php endif; ?>
+
                         <?php if (!empty($rx['pharmacist_notes'])): ?>
                           <div class="text-secondary text-truncate mt-0.5 d-flex align-items-center gap-1" style="font-size: 0.74rem; max-width: 230px;" title="<?php echo htmlspecialchars($rx['pharmacist_notes']); ?>">
                             <i class="bi bi-chat-left-dots-fill text-emerald"></i> <?php echo htmlspecialchars($rx['pharmacist_notes']); ?>
@@ -404,7 +456,7 @@ include_once __DIR__ . '/../includes/header.php';
           <div class="col-lg-5 p-3 p-md-4 bg-white d-flex flex-column">
             
             <!-- Patient Info Box -->
-            <div class="p-3 mb-3.5 rounded-3 bg-light border">
+            <div class="p-3 mb-3 rounded-3 bg-light border">
               <h6 class="fw-bold text-dark mb-2 pb-1 border-bottom d-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
                 <i class="bi bi-person-badge text-emerald"></i> Patient Information
               </h6>
@@ -463,19 +515,32 @@ include_once __DIR__ . '/../includes/header.php';
                 </div>
               </div>
 
-              <!-- Pharmacist Clinical Notes / Dosage Instructions -->
-              <div class="mb-4">
-                <label for="modalPharmacistNotes" class="form-label fw-bold text-dark small mb-1">
-                  <i class="bi bi-chat-text text-emerald me-1"></i> Pharmacist Notes / Instructions to Patient:
+              <!-- Prescription Quotation Amount (LKR) -->
+              <div class="mb-3">
+                <label for="modalQuotedAmount" class="form-label fw-bold text-dark small mb-1 d-flex justify-content-between">
+                  <span><i class="bi bi-tag-fill text-emerald me-1"></i> Quoted Amount (LKR):</span>
+                  <span class="text-muted fw-normal" style="font-size: 0.72rem;">(Optional if rejecting)</span>
                 </label>
-                <textarea name="pharmacist_notes" id="modalPharmacistNotes" rows="3" class="form-control form-control-sm" placeholder="e.g. Verified 5-day Amoxicillin course. Total cost Rs. 1,450.00. Take 1 capsule TDS with water..."></textarea>
-                <small class="text-muted" style="font-size: 0.72rem;">This clinical note is recorded on the patient's account quotation.</small>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light fw-bold text-secondary">Rs.</span>
+                  <input type="number" step="0.01" min="0" name="quoted_amount" id="modalQuotedAmount" class="form-control fw-bold text-emerald" placeholder="e.g. 2450.00">
+                </div>
+                <small class="text-muted" style="font-size: 0.72rem;">When approved with a price, the system links an order for customer online checkout / COD.</small>
+              </div>
+
+              <!-- Pharmacist Clinical Notes / Dosage Instructions -->
+              <div class="mb-3">
+                <label for="modalPharmacistNotes" class="form-label fw-bold text-dark small mb-1">
+                  <i class="bi bi-chat-text text-emerald me-1"></i> Pharmacist Notes & Dosage Instructions:
+                </label>
+                <textarea name="pharmacist_notes" id="modalPharmacistNotes" rows="3" class="form-control form-control-sm" placeholder="e.g. Verified 5-day Amoxicillin course (Rs. 1,800) + Paracetamol (Rs. 400) + Delivery (Rs. 250). Take 1 Cap TDS with water..."></textarea>
+                <small class="text-muted" style="font-size: 0.72rem;">These clinical notes & medicine instructions are shown on the patient's dashboard & invoice.</small>
               </div>
 
               <!-- Submit Button -->
               <div class="mt-auto">
                 <button type="submit" class="btn btn-emerald w-100 py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
-                  <i class="bi bi-save2-fill"></i> Save Clinical Decision
+                  <i class="bi bi-save2-fill"></i> Save Clinical Decision & Issue Quote
                 </button>
               </div>
 
@@ -508,6 +573,7 @@ function openClinicalModal(rx) {
   document.getElementById('modalPatientAddress').textContent = rx.delivery_address;
   
   document.getElementById('modalPharmacistNotes').value = rx.pharmacist_notes || '';
+  document.getElementById('modalQuotedAmount').value = (rx.quoted_amount && parseFloat(rx.quoted_amount) > 0) ? parseFloat(rx.quoted_amount).toFixed(2) : '';
 
   // Select Status Radio
   if (rx.status === 'Approved') {

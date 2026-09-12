@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (mysqli_query($conn, $sql)) {
                 $rxId = mysqli_insert_id($conn);
-                $successMsg = "Your prescription (#RX-" . str_pad($rxId, 4, '0', STR_PAD_LEFT) . ") has been uploaded successfully as Base64! Our pharmacist will review it and contact you on $phone shortly.";
+                $successMsg = "Your prescription (#RX-" . str_pad($rxId, 4, '0', STR_PAD_LEFT) . ") has been uploaded successfully! Our duty pharmacist will review your dosages and prepare your quotation. You can track status and pay online or via COD from your dashboard.";
             } else {
                 $errorMsg = 'Failed to save prescription to database: ' . mysqli_error($conn);
             }

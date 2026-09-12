@@ -1,11 +1,7 @@
 -- ==========================================================
 -- MediQuick Pharmacy Database Script
--- Database: `mediquick_db`
 -- Assignment: CSE4206 - Web Application Development (Kurunegala)
 -- ==========================================================
-
-CREATE DATABASE IF NOT EXISTS `mediquick_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `mediquick_db`;
 
 -- Temporarily disable foreign key checks to cleanly drop existing tables
 SET FOREIGN_KEY_CHECKS = 0;
@@ -75,6 +71,8 @@ CREATE TABLE `prescriptions` (
     `image` LONGTEXT NOT NULL,
     `status` ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
     `pharmacist_notes` TEXT DEFAULT NULL,
+    `quoted_amount` DECIMAL(10,2) DEFAULT NULL,
+    `order_id` INT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -105,7 +103,7 @@ CREATE TABLE `orders` (
 CREATE TABLE `order_items` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `order_id` INT NOT NULL,
-    `product_id` INT NOT NULL,
+    `product_id` INT DEFAULT NULL,
     `product_name` VARCHAR(255) NOT NULL,
     `unit_price` DECIMAL(10,2) NOT NULL,
     `quantity` INT NOT NULL DEFAULT 1,

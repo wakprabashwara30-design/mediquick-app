@@ -60,6 +60,10 @@ $orderRef = 'MQ' . time();
 // Generate MD5 Checksum Hash using official secret
 $hash = generatePayHereHash($orderRef, $grandTotal, PAYHERE_CURRENCY);
 
+// Dynamic Base URL detection for Localhost and Live Hosting
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || ($_SERVER['SERVER_PORT'] ?? 80) == 443) ? "https://" : "http://";
+$baseUrl = $protocol . ($_SERVER['HTTP_HOST'] ?? 'localhost:8000');
+
 echo json_encode([
     'status' => 'success',
     'sandbox' => PAYHERE_SANDBOX_MODE,
@@ -76,8 +80,8 @@ echo json_encode([
     'address' => $address,
     'city' => $city,
     'country' => 'Sri Lanka',
-    'return_url' => 'http://localhost:8000/order-success.php',
-    'cancel_url' => 'http://localhost:8000/checkout.php',
-    'notify_url' => 'http://localhost:8000/payhere_notify.php'
+    'return_url' => $baseUrl . '/order-success.php',
+    'cancel_url' => $baseUrl . '/checkout.php',
+    'notify_url' => $baseUrl . '/payhere_notify.php'
 ]);
 exit();

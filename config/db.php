@@ -9,11 +9,22 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Database Credentials (XAMPP / WAMP / MAMP defaults)
-$db_host = "localhost";
-$db_user = "root";
-$db_pass = "";
-$db_name = "mediquick_db";
+// Auto-detect environment: Localhost vs Live Hosting (InfinityFree)
+$is_local = in_array($_SERVER['HTTP_HOST'] ?? 'localhost', ['localhost', '127.0.0.1', 'localhost:8000', '127.0.0.1:8000']);
+
+if ($is_local) {
+    // Local Development Credentials (XAMPP)
+    $db_host = "127.0.0.1";
+    $db_user = "root";
+    $db_pass = "";
+    $db_name = "mediquick_db";
+} else {
+    // InfinityFree Live Server Credentials
+    $db_host = "sql107.infinityfree.com";
+    $db_user = "if0_42895541";
+    $db_pass = "Vgj7duCGgBqPbyJ";
+    $db_name = "if0_42895541_mediquick";
+}
 
 // Create Connection
 $conn = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
@@ -22,7 +33,7 @@ $conn = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
 if (!$conn) {
     die("<div style='font-family:sans-serif; padding:20px; background:#fee2e2; color:#991b1b; border-radius:8px; margin:20px;'>
         <h3>Database Connection Error</h3>
-        <p>Could not connect to MySQL server. Please make sure MySQL is running in XAMPP/WAMP and the database <strong>mediquick_db</strong> is imported.</p>
+        <p>Could not connect to MySQL server. Please verify database credentials.</p>
         <p><strong>Error details:</strong> " . mysqli_connect_error() . "</p>
     </div>");
 }

@@ -8,15 +8,16 @@ A dynamic, database-driven community pharmacy web application developed for **Me
 
 ### 1. Customer Storefront
 * **Live Catalog & Search:** Browse Over-the-Counter (OTC) and Prescription (Rx) medications with real-time brand filtering.
-* **Prescription Upload:** Upload doctor prescriptions with instant client-side JavaScript preview and Base64 storage in MySQL.
-* **Shopping Cart & Checkout:** Frictionless Cash on Delivery (COD) checkout with delivery fee calculations.
+* **Prescription Upload & Quotation:** Upload doctor prescriptions with instant preview, receive pharmacist price quotations & dosage instructions.
+* **Prescription Online Payment & COD:** Pay for approved prescriptions directly from the dashboard via **PayHere Online Payment** (Visa/Mastercard/Mobile) or **Cash on Delivery**.
+* **Shopping Cart & Checkout:** Frictionless checkout with PayHere Sandbox integration and delivery fee calculations.
 * **1-Click Printable Tax Invoice:** Automated single-page A4 invoice download on order confirmation.
-* **Customer Dashboard:** Real-time order tracking and prescription review history.
+* **Customer Dashboard:** Real-time order tracking, prescription review history, and 1-click prescription checkout.
 
 ### 2. Pharmacist & Admin Portal (`admin/`)
 * **KPI Dashboard:** Real-time overview of monthly revenue, total orders, pending prescriptions, and low stock alerts.
+* **Prescription Verification & Quotation Queue:** Duty pharmacists inspect prescription slips, enter LKR price quotations, provide clinical dosage notes, and approve orders.
 * **Medicine Inventory CRUD:** Add, update, and manage medicine categories, unit prices, dosages, and stock quantities.
-* **Prescription Verification Queue:** Duty pharmacists can review high-resolution prescription photos in modal popups and approve/reject orders.
 * **Order Dispatch Tracking:** Manage order statuses (Pending, Processing, Delivered, Cancelled).
 
 ---
