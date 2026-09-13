@@ -5,15 +5,29 @@
  */
 require_once __DIR__ . '/config/db.php';
 
+// Extract and sanitize redirect parameter
+$redirect = trim($_GET['redirect'] ?? $_POST['redirect'] ?? '');
+$allowedRedirects = ['checkout.php', 'cart.php', 'prescription.php', 'my-orders.php', 'index.php', 'shop.php'];
+if (!in_array($redirect, $allowedRedirects)) {
+    $redirect = '';
+}
+
 // If already logged in, redirect
 if (isLoggedIn()) {
     if (isAdmin()) {
         header("Location: admin/index.php");
     } else {
-        header("Location: index.php");
+        if (!empty($redirect)) {
+            header("Location: " . $redirect);
+        } else {
+            header("Location: index.php");
+        }
     }
     exit();
 }
+
+$noticeMsg = $_SESSION['login_notice'] ?? '';
+unset($_SESSION['login_notice']);
 
 $errorMsg = '';
 
@@ -39,11 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['role'] = $user['role'];
 
-                // Redirect based on role
+                // Redirect based on role and requested redirect target
                 if ($user['role'] === 'admin') {
                     header("Location: admin/index.php");
                 } else {
-                    if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
+                    if (!empty($redirect)) {
+                        header("Location: " . $redirect);
+                    } elseif (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
                         header("Location: cart.php");
                     } else {
                         header("Location: index.php");
@@ -79,6 +95,15 @@ include_once __DIR__ . '/includes/navbar.php';
             <p class="text-muted small">Sign in to your patient account or pharmacist portal</p>
           </div>
 
+          <?php if (!empty($noticeMsg)): ?>
+            <div class="alert alert-success border-emerald d-flex align-items-center gap-2.5 small p-3 mb-3 rounded-3" role="alert" style="background-color: #ecfdf5; color: #065f46;">
+              <i class="bi bi-shield-lock-fill fs-5 flex-shrink-0 text-emerald"></i>
+              <div>
+                <strong>Authentication Required:</strong> <?php echo htmlspecialchars($noticeMsg); ?>
+              </div>
+            </div>
+          <?php endif; ?>
+
           <?php if (!empty($errorMsg)): ?>
             <div class="alert alert-danger alert-dismissible fade show small" role="alert">
               <i class="bi bi-exclamation-triangle-fill me-1"></i> <?php echo htmlspecialchars($errorMsg); ?>
@@ -87,6 +112,9 @@ include_once __DIR__ . '/includes/navbar.php';
           <?php endif; ?>
 
           <form action="login.php" method="POST">
+            <?php if (!empty($redirect)): ?>
+              <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
+            <?php endif; ?>
             
             <div class="mb-3">
               <label for="email" class="form-label small fw-bold">Email Address</label>
@@ -109,7 +137,7 @@ include_once __DIR__ . '/includes/navbar.php';
             </button>
 
             <div class="text-center small text-secondary">
-              Don't have an account? <a href="register.php" class="text-emerald fw-bold">Register here</a>
+              Don't have an account? <a href="register.php<?php echo !empty($redirect) ? '?redirect=' . urlencode($redirect) : ''; ?>" class="text-emerald fw-bold">Register here</a>
             </div>
           </form>
 

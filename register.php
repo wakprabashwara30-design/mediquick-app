@@ -5,8 +5,19 @@
  */
 require_once __DIR__ . '/config/db.php';
 
+// Extract and sanitize redirect parameter
+$redirect = trim($_GET['redirect'] ?? $_POST['redirect'] ?? '');
+$allowedRedirects = ['checkout.php', 'cart.php', 'prescription.php', 'my-orders.php', 'index.php', 'shop.php'];
+if (!in_array($redirect, $allowedRedirects)) {
+    $redirect = '';
+}
+
 if (isLoggedIn()) {
-    header("Location: index.php");
+    if (!empty($redirect)) {
+        header("Location: " . $redirect);
+    } else {
+        header("Location: index.php");
+    }
     exit();
 }
 
@@ -51,7 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_email'] = $email;
                 $_SESSION['role'] = 'customer';
 
-                header("Location: index.php");
+                if (!empty($redirect)) {
+                    header("Location: " . $redirect);
+                } elseif (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
+                    header("Location: cart.php");
+                } else {
+                    header("Location: index.php");
+                }
                 exit();
             } else {
                 $errorMsg = 'Registration failed due to a database error: ' . mysqli_error($conn);
@@ -88,6 +105,9 @@ include_once __DIR__ . '/includes/navbar.php';
           <?php endif; ?>
 
           <form action="register.php" method="POST">
+            <?php if (!empty($redirect)): ?>
+              <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
+            <?php endif; ?>
             
             <div class="mb-3">
               <label for="regName" class="form-label small fw-bold">Full Name <span class="text-danger">*</span></label>
@@ -126,7 +146,7 @@ include_once __DIR__ . '/includes/navbar.php';
             </button>
 
             <div class="text-center small text-secondary">
-              Already have an account? <a href="login.php" class="text-emerald fw-bold">Sign In here</a>
+              Already have an account? <a href="login.php<?php echo !empty($redirect) ? '?redirect=' . urlencode($redirect) : ''; ?>" class="text-emerald fw-bold">Sign In here</a>
             </div>
           </form>
 

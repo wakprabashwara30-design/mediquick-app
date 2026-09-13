@@ -5,6 +5,13 @@
  */
 require_once __DIR__ . '/config/db.php';
 
+// Check if user is logged in (Mandatory Authentication for Pharmacy Checkout)
+if (!isLoggedIn()) {
+    $_SESSION['login_notice'] = "Please log in or create an account to complete your pharmacy order and track delivery.";
+    header("Location: login.php?redirect=checkout.php");
+    exit();
+}
+
 // Check if cart is empty
 if (!isset($_SESSION['cart']) || count($_SESSION['cart']) === 0) {
     header("Location: cart.php");
@@ -42,21 +49,19 @@ if ($cartResult) {
 $deliveryFee = ($subtotal > 0 && $subtotal < 3000) ? 250.00 : 0.00;
 $grandTotal = $subtotal + $deliveryFee;
 
-// Pre-fill user data if logged in
-$defaultName = '';
-$defaultEmail = '';
+// Pre-fill user data from database for logged in user
+$userId = (int)$_SESSION['user_id'];
+$defaultName = $_SESSION['user_name'] ?? '';
+$defaultEmail = $_SESSION['user_email'] ?? '';
 $defaultPhone = '';
 $defaultAddress = '';
 
-if (isLoggedIn()) {
-    $userId = (int)$_SESSION['user_id'];
-    $userQuery = mysqli_query($conn, "SELECT * FROM users WHERE id = $userId LIMIT 1");
-    if ($userQuery && $u = mysqli_fetch_assoc($userQuery)) {
-        $defaultName = $u['name'] ?? '';
-        $defaultEmail = $u['email'] ?? '';
-        $defaultPhone = $u['phone'] ?? '';
-        $defaultAddress = $u['address'] ?? '';
-    }
+$userQuery = mysqli_query($conn, "SELECT * FROM users WHERE id = $userId LIMIT 1");
+if ($userQuery && $u = mysqli_fetch_assoc($userQuery)) {
+    $defaultName = !empty($u['name']) ? $u['name'] : $defaultName;
+    $defaultEmail = !empty($u['email']) ? $u['email'] : $defaultEmail;
+    $defaultPhone = $u['phone'] ?? '';
+    $defaultAddress = $u['address'] ?? '';
 }
 
 $errorMsg = '';
@@ -69,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address = trim($_POST['delivery_address'] ?? '');
     $city = trim($_POST['city'] ?? 'Colombo');
     $paymentMethod = trim($_POST['payment_method'] ?? 'Cash on Delivery');
-    $userIdVal = isLoggedIn() ? (int)$_SESSION['user_id'] : "NULL";
+    $userIdVal = (int)$_SESSION['user_id'];
 
     if (empty($name) || empty($phone) || empty($address)) {
         $errorMsg = 'Please fill in all required delivery fields (Name, Phone, Address).';
@@ -145,9 +150,14 @@ include_once __DIR__ . '/includes/navbar.php';
       <!-- Checkout Form -->
       <div class="col-lg-7">
         <div class="card card-custom p-4 bg-white">
-          <h5 class="fw-bold mb-3 border-bottom pb-2">
-            <i class="bi bi-geo-alt me-1 text-emerald"></i> Delivery & Contact Details
-          </h5>
+          <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <h5 class="fw-bold mb-0">
+              <i class="bi bi-geo-alt me-1 text-emerald"></i> Delivery & Contact Details
+            </h5>
+            <span class="badge bg-emerald-subtle text-emerald border border-emerald rounded-pill small">
+              <i class="bi bi-person-check-fill me-1"></i> <?php echo htmlspecialchars($_SESSION['user_name'] ?? 'Verified Account'); ?>
+            </span>
+          </div>
 
           <form action="checkout.php" method="POST">
             
@@ -199,7 +209,7 @@ include_once __DIR__ . '/includes/navbar.php';
                 <input class="form-check-input mt-1" type="radio" name="payment_method" id="payPayHere" value="PayHere (Online Card / Mobile)" onchange="togglePaymentUi()">
                 <label class="form-check-label fw-semibold text-dark w-100 ps-1" for="payPayHere">
                   <div class="d-flex justify-content-between align-items-center flex-wrap gap-1">
-                    <span><i class="bi bi-shield-check text-emerald me-1.5 fs-5"></i> PayHere Online Payment <span class="badge bg-emerald text-white rounded-pill ms-1" style="font-size: 0.68rem;">LKR Sandbox</span></span>
+                    <span><i class="bi bi-shield-check text-emerald me-1.5 fs-5"></i> PayHere Online Payment <span class="badge bg-emerald text-white rounded-pill ms-1" style="font-size: 0.68rem;"><i class="bi bi-shield-lock-fill me-1"></i>Secure Gateway</span></span>
                     <span class="badge bg-success text-white rounded-pill px-2 py-1" style="font-size: 0.7rem;">CBSL Approved</span>
                   </div>
                   <div class="text-muted small fw-normal mt-1 mb-2">Instant online payment via Visa, MasterCard, AMEX, eZ Cash, mCash, FriMi, and Genie.</div>
@@ -209,31 +219,6 @@ include_once __DIR__ . '/includes/navbar.php';
                     <span class="badge bg-white text-dark border px-2 py-1 shadow-2xs fw-bold" style="font-size: 0.72rem;"><i class="bi bi-wallet2 text-danger me-1"></i> FriMi / Genie</span>
                   </div>
                 </label>
-              </div>
-
-              <!-- PayHere Demo Test Cards Helper Box -->
-              <div id="payhereHelperBox" class="p-3 rounded-3 border bg-emerald-subtle border-emerald mb-3 d-none">
-                <div class="d-flex align-items-center justify-content-between mb-1.5">
-                  <span class="fw-bold text-dark small"><i class="bi bi-info-circle-fill text-emerald me-1"></i> PayHere Sandbox Official Test Cards:</span>
-                  <span class="badge bg-emerald text-white rounded-pill" style="font-size: 0.68rem;">Demo Mode</span>
-                </div>
-                <div class="row g-2 small text-dark font-monospace" style="font-size: 0.8rem;">
-                  <div class="col-sm-6">
-                    <span class="text-muted">Visa Card:</span> <strong class="bg-white px-1.5 py-0.5 rounded border user-select-all">4916217501611292</strong>
-                  </div>
-                  <div class="col-sm-6">
-                    <span class="text-muted">MasterCard:</span> <strong class="bg-white px-1.5 py-0.5 rounded border user-select-all">5307732125531191</strong>
-                  </div>
-                  <div class="col-sm-4">
-                    <span class="text-muted">Exp:</span> <strong class="bg-white px-1.5 py-0.5 rounded border user-select-all">12/28</strong>
-                  </div>
-                  <div class="col-sm-4">
-                    <span class="text-muted">CVV:</span> <strong class="bg-white px-1.5 py-0.5 rounded border user-select-all">123</strong>
-                  </div>
-                  <div class="col-sm-4">
-                    <span class="text-muted">SMS OTP:</span> <strong class="bg-white px-1.5 py-0.5 rounded border text-success fw-bold user-select-all">123456</strong>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -297,14 +282,11 @@ include_once __DIR__ . '/includes/navbar.php';
 <script>
 function togglePaymentUi() {
   const isPayHere = document.getElementById('payPayHere').checked;
-  const helperBox = document.getElementById('payhereHelperBox');
   const btnText = document.getElementById('btnSubmitText');
   
   if (isPayHere) {
-    if (helperBox) helperBox.classList.remove('d-none');
-    if (btnText) btnText.innerHTML = 'Pay with PayHere Sandbox (<?php echo formatLKR($grandTotal); ?>)';
+    if (btnText) btnText.innerHTML = 'Pay Online with PayHere (<?php echo formatLKR($grandTotal); ?>)';
   } else {
-    if (helperBox) helperBox.classList.add('d-none');
     if (btnText) btnText.innerHTML = 'Confirm & Place Order (<?php echo formatLKR($grandTotal); ?>)';
   }
 }
@@ -338,7 +320,7 @@ payhere.onDismissed = function onDismissed() {
   const btn = document.getElementById('submitOrderBtn');
   if (btn) {
     btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-bag-check-fill me-2"></i> <span id="btnSubmitText">Pay with PayHere Sandbox (<?php echo formatLKR($grandTotal); ?>)</span>';
+    btn.innerHTML = '<i class="bi bi-bag-check-fill me-2"></i> <span id="btnSubmitText">Pay Online with PayHere (<?php echo formatLKR($grandTotal); ?>)</span>';
   }
   togglePaymentUi();
 };
@@ -349,7 +331,7 @@ payhere.onError = function onError(error) {
   const btn = document.getElementById('submitOrderBtn');
   if (btn) {
     btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-bag-check-fill me-2"></i> <span id="btnSubmitText">Pay with PayHere Sandbox (<?php echo formatLKR($grandTotal); ?>)</span>';
+    btn.innerHTML = '<i class="bi bi-bag-check-fill me-2"></i> <span id="btnSubmitText">Pay Online with PayHere (<?php echo formatLKR($grandTotal); ?>)</span>';
   }
   togglePaymentUi();
 };

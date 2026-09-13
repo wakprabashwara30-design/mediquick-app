@@ -208,12 +208,21 @@ $grandTotal = $subtotal + $deliveryFee;
               <span class="fs-4 fw-bold text-emerald"><?php echo formatLKR($grandTotal); ?></span>
             </div>
 
-            <a href="checkout.php" class="btn btn-emerald w-100 py-2.5 fw-bold">
-              Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i>
-            </a>
+            <?php if (isLoggedIn()): ?>
+              <a href="checkout.php" class="btn btn-emerald w-100 py-2.5 fw-bold">
+                Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            <?php else: ?>
+              <a href="login.php?redirect=checkout.php" class="btn btn-emerald w-100 py-2.5 fw-bold">
+                Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+              <div class="text-center mt-2 text-secondary" style="font-size: 0.72rem;">
+                <i class="bi bi-person-lock text-emerald me-1"></i> Sign in or register to complete order
+              </div>
+            <?php endif; ?>
 
             <div class="text-center mt-3 text-muted small" style="font-size: 0.75rem;">
-              <i class="bi bi-shield-check text-success me-1"></i> Safe & Secure Checkout
+              <i class="bi bi-shield-check text-success me-1"></i> Safe & Secure Dispensation
             </div>
           </div>
         </div>
